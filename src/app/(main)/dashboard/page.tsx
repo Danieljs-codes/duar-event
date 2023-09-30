@@ -21,14 +21,13 @@ const DashboardPage = async () => {
     redirect('/auth-callback');
   }
 
-  const events = await db.events.findMany({
+  await db.events.findMany({
     where: {
       userId: user.id,
     },
   });
-  
 
-  return <Dashboard events={events} />;
+  return <Dashboard />;
 };
 
 export default DashboardPage;

@@ -13,7 +13,7 @@ interface Props {
   events: Awaited<ReturnType<typeof db.events.findMany>>;
 }
 
-const Dashboard = ({ events }: Props) => {
+const Dashboard = () => {
   const { data, isLoading, refetch, error } = trpc.getAllUserEvent.useQuery();
 
   if (isLoading) {
