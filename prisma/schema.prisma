@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  // If you want to use Prisma Migrate, you will need to manually create a shadow database
+  // https://neon.tech/docs/guides/prisma-migrate#configure-a-shadow-database-for-prisma-migrate
+  // make sure to append ?connect_timeout=10 to the connection string
+  // shadowDatabaseUrl = env(“SHADOW_DATABASE_URL”)
+}
+
+model User {
+  id        String   @id @unique // Matches Clerk User Id
+  email     String   @unique
+  firstName String
+  lastName  String
+  imageUrl  String?
+  Events    Events[]
+  Ticket    Ticket[]
+}
+
+enum UploadStatus {
+  UPLOADED
+  DRAFT
+  SOLD_OUT
+}
+
+enum TicketStatus {
+  PAID
+  REFUND
+  PROCESSING
+}
+
+model Events {
+  id           String       @unique @default(cuid())
+  uploadStatus UploadStatus @default(DRAFT)
+  name         String?
+  description  String?
+  thumbnail    String?
+  date         DateTime?    @default(now())
+  location     String?
+  price        Int?
+  capacity     Int?
+  createdAt    DateTime?    @default(now())
+  updatedAt    DateTime?    @updatedAt
+  startSelling DateTime?
+  endSelling   DateTime?
+  views        Int?         @default(0)
+  trending     Boolean?     @default(false)
+  riseOrDrop   String?
+
+  User User @relation(fields: [userId], references: [id])
+
+  userId String
+  Ticket Ticket[]
+}
+
+model Ticket {
+  id        String       @id @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  status    TicketStatus @default(PAID)
+  Events    Events       @relation(fields: [eventId], references: [id])
+  eventId   String
+  User      User         @relation(fields: [userId], references: [id])
+  userId    String
+  Refund    Refund[]
+}
+
+model Refund {
+  id        String   @id @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId  String
+}
